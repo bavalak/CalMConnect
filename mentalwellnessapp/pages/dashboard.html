@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CalmConnect Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin:0;
+      font-family:Segoe UI;
+      background:#eef7f8;
+    }
+    header {
+      background:#5fa4a9;
+      padding:20px;
+      color:white;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    button {
+      background:#5fa4a9;
+      color:white;
+      border:none;
+      padding:10px 18px;
+      border-radius:20px;
+      cursor:pointer;
+    }
+    .container {
+      padding:30px;
+    }
+    .card {
+      background:white;
+      padding:25px;
+      margin-bottom:20px;
+      border-radius:15px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+    /* Breathing Circle */
+    .breath-wrapper {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .circle {
+      width:150px;
+      height:150px;
+      border-radius:50%;
+      background:conic-gradient(#5fa4a9 0%, #d9eded 0%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:bold;
+      color:#333;
+      margin:20px 0;
+    }
+    #breathText {
+      font-size:18px;
+      margin-bottom:10px;
+    }
+    /* Chat */
+    .chat-box {
+      height:150px;
+      overflow-y:auto;
+      border:1px solid #ccc;
+      padding:10px;
+      border-radius:10px;
+      margin-bottom:10px;
+    }
+    .user { color:#5fa4a9; }
+    .bot { color:#333; }
+    textarea, select, input {
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      border-radius:10px;
+      border:1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h2>🌿 CalmConnect Dashboard</h2>
+  <button onclick="goHome()">Home</button>
+</header>
+
+<div class="container">
+
+  <!-- Mood -->
+  <div class="card">
+    <h3>😊 Mood Tracker</h3>
+    <select id="mood">
+      <option>Happy</option>
+      <option>Calm</option>
+      <option>Sad</option>
+      <option>Anxious</option>
+      <option>Stressed</option>
+    </select>
+    <button onclick="saveMood()">Save Mood</button>
+  </div>
+
+  <!-- Stress -->
+  <div class="card">
+    <h3>📊 Stress Level</h3>
+    <input type="number" id="stress" min="1" max="10" placeholder="Enter stress level (1–10)">
+    <button onclick="saveStress()">Save</button>
+    <canvas id="stressChart"></canvas>
+  </div>
+
+  <!-- Breathing -->
+  <div class="card">
+    <h3>🫁 Breathing Exercise</h3>
+    <div class="breath-wrapper">
+      <p id="breathText">Click start</p>
+      <div class="circle" id="circle">
+        <span id="percent">0%</span>
+      </div>
+      <button onclick="startBreathing()">Start 40-Second Cycle</button>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <button onclick="go('balloons.html')">🎈 Balloon Pop</button>
+  <button onclick="go('release.html')">🧘 Release</button>
+  <button onclick="go('support.html')">💬 Support</button>
+  <button onclick="go('ground.html')">🌱 Ground</button>
+  <button onclick="go('reframe.html')">🧠 Reframe</button>
+  <button onclick="logout()">Logout</button>
+
+  <!-- Journal -->
+  <div class="card">
+    <h3>📓 My Journal</h3>
+    <textarea id="journal" placeholder="Write your feelings..."></textarea>
+    <button onclick="saveJournal()">Save</button>
+  </div>
+
+  <!-- Chat -->
+  <div class="card">
+    <h3>💬 Support Chat</h3>
+    <div class="chat-box" id="chat"></div>
+    <input id="msg" placeholder="Type here...">
+    <button onclick="send()">Send</button>
+  </div>
+
+</div>
+
+<script>
+function goHome(){
+  window.location="home.html";
+}
+
+/* Journal */
+const journal = document.getElementById("journal");
+journal.value = localStorage.getItem("journal") || "";
+function saveJournal(){
+  localStorage.setItem("journal", journal.value);
+  alert("Journal saved 💚");
+}
+
+/* Mood */
+const mood = document.getElementById("mood");
+function saveMood(){
+  localStorage.setItem("mood", mood.value);
+  alert("Mood saved");
+}
+
+/* Stress Chart */
+const stress = document.getElementById("stress");
+let data = JSON.parse(localStorage.getItem("stress")) || [];
+function saveStress(){
+  data.push(stress.value);
+  localStorage.setItem("stress", JSON.stringify(data));
+  draw();
+}
+let ctx = document.getElementById("stressChart");
+let chart;
+function draw(){
+  if(chart) chart.destroy();
+  chart = new Chart(ctx,{
+    type:'line',
+    data:{labels:data.map((_,i)=>i+1),datasets:[{data:data}]}
+  });
+}
+draw();
+
+/* Breathing Logic */
+let interval;
+function startBreathing(){
+  clearInterval(interval);
+  let percent = 0;
+  let circle = document.getElementById("circle");
+  let text = document.getElementById("breathText");
+  let p = document.getElementById("percent");
+
+  text.innerText = "Breathe In 🌿";
+  interval = setInterval(()=>{
+    percent++;
+    p.innerText = percent + "%";
+    circle.style.background =
+      `conic-gradient(#5fa4a9 ${percent*3.6}deg, #d9eded 0deg)`;
+    if(percent === 100){
+      clearInterval(interval);
+      breatheOut();
+    }
+  },200);
+}
+
+function breatheOut(){
+  let percent = 100;
+  let circle = document.getElementById("circle");
+  let text = document.getElementById("breathText");
+  let p = document.getElementById("percent");
+
+  text.innerText = "Breathe Out 🌬️";
+  interval = setInterval(()=>{
+    percent--;
+    p.innerText = percent + "%";
+    circle.style.background =
+      `conic-gradient(#5fa4a9 ${percent*3.6}deg, #d9eded 0deg)`;
+    if(percent === 0){
+      clearInterval(interval);
+      text.innerText = "Well done 💖";
+    }
+  },200);
+}
+
+/* Chat */
+const msg = document.getElementById("msg");
+const chat = document.getElementById("chat");
+function send(){
+  let m = msg.value.toLowerCase();
+  chat.innerHTML += "<p class='user'>You: "+msg.value+"</p>";
+  let reply="I'm here for you 💚";
+  if(m.includes("sad")) reply="You are not alone.";
+  if(m.includes("stress")) reply="Slow breathing helps calm your mind.";
+  chat.innerHTML += "<p class='bot'>Bot: "+reply+"</p>";
+  msg.value="";
+}
+</script>
+<button onclick="window.location='home.html'">🏠 Home</button>
+
+</body>
+</html>
