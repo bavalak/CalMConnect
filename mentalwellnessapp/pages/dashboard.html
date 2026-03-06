@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>CalmConnect Dashboard</title>
@@ -8,8 +8,9 @@
   <style>
     body {
       margin:0;
-      font-family:Segoe UI;
-      background:#eef7f8;
+      font-family:'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #d9f7f5, #f0e6f9);
+      color:#333;
     }
     header {
       background:#5fa4a9;
@@ -19,23 +20,50 @@
       justify-content:space-between;
       align-items:center;
     }
+    header h2 { margin:0; }
     button {
       background:#5fa4a9;
       color:white;
       border:none;
-      padding:10px 18px;
-      border-radius:20px;
+      padding:10px 20px;
+      border-radius:30px;
       cursor:pointer;
+      margin:5px;
+      transition: background 0.3s ease;
     }
+    button:hover { background:#4a8c91; }
     .container {
       padding:30px;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap:20px;
     }
     .card {
-      background:white;
+      background:rgba(255,255,255,0.9);
+      border-radius:20px;
       padding:25px;
+      box-shadow:0 8px 20px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      animation: fadeUp 0.8s ease forwards;
+    }
+    .card:hover { transform: translateY(-5px); }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(30px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .stats {
+      display:flex;
+      gap:15px;
       margin-bottom:20px;
+    }
+    .stat {
+      flex:1;
+      background:#fff;
       border-radius:15px;
-      box-shadow:0 0 10px rgba(0,0,0,0.1);
+      padding:15px;
+      text-align:center;
+      font-weight:bold;
+      box-shadow:0 4px 10px rgba(0,0,0,0.1);
     }
     /* Breathing Circle */
     .breath-wrapper {
@@ -47,20 +75,16 @@
       width:150px;
       height:150px;
       border-radius:50%;
-      background:conic-gradient(#5fa4a9 0%, #d9eded 0%);
+      background:#d9eded;
+      box-shadow:0 0 20px rgba(95,164,169,0.5);
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:22px;
       font-weight:bold;
-      color:#333;
       margin:20px 0;
     }
-    #breathText {
-      font-size:18px;
-      margin-bottom:10px;
-    }
-    /* Chat */
+    #breathText { font-size:18px; margin-bottom:10px; }
     .chat-box {
       height:150px;
       overflow-y:auto;
@@ -68,6 +92,7 @@
       padding:10px;
       border-radius:10px;
       margin-bottom:10px;
+      background:#fafafa;
     }
     .user { color:#5fa4a9; }
     .bot { color:#333; }
@@ -88,6 +113,13 @@
 </header>
 
 <div class="container">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">🕒 10 min Avg</div>
+    <div class="stat">⏳ 251 Minutes</div>
+    <div class="stat">📊 25 Sessions</div>
+  </div>
 
   <!-- Mood -->
   <div class="card">
@@ -122,14 +154,6 @@
     </div>
   </div>
 
-  <!-- Navigation -->
-  <button onclick="go('balloons.html')">🎈 Balloon Pop</button>
-  <button onclick="go('release.html')">🧘 Release</button>
-  <button onclick="go('support.html')">💬 Support</button>
-  <button onclick="go('ground.html')">🌱 Ground</button>
-  <button onclick="go('reframe.html')">🧠 Reframe</button>
-  <button onclick="logout()">Logout</button>
-
   <!-- Journal -->
   <div class="card">
     <h3>📓 My Journal</h3>
@@ -145,12 +169,23 @@
     <button onclick="send()">Send</button>
   </div>
 
+  <!-- Navigation -->
+  <div class="card">
+    <h3>🔗 Quick Links</h3>
+    <button onclick="go('balloons.html')">🎈 Balloon Pop</button>
+    <button onclick="go('release.html')">🧘 Release</button>
+    <button onclick="go('support.html')">💬 Support</button>
+    <button onclick="go('ground.html')">🌱 Ground</button>
+    <button onclick="go('reframe.html')">🧠 Reframe</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
 </div>
 
 <script>
-function goHome(){
-  window.location="home.html";
-}
+function goHome(){ window.location="home.html"; }
+function go(page){ window.location=page; }
+function logout(){ window.location="login.html"; }
 
 /* Journal */
 const journal = document.getElementById("journal");
@@ -181,7 +216,7 @@ function draw(){
   if(chart) chart.destroy();
   chart = new Chart(ctx,{
     type:'line',
-    data:{labels:data.map((_,i)=>i+1),datasets:[{data:data}]}
+    data:{labels:data.map((_,i)=>i+1),datasets:[{data:data, borderColor:'#5fa4a9'}]}
   });
 }
 draw();
@@ -207,7 +242,6 @@ function startBreathing(){
     }
   },200);
 }
-
 function breatheOut(){
   let percent = 100;
   let circle = document.getElementById("circle");
@@ -232,17 +266,4 @@ const msg = document.getElementById("msg");
 const chat = document.getElementById("chat");
 function send(){
   let m = msg.value.toLowerCase();
-  chat.innerHTML += "<p class='user'>You: "+msg.value+"</p>";
-  let reply="I'm here for you 💚";
-  if(m.includes("sad")) reply="You are not alone.";
-  if(m.includes("stress")) reply="Slow breathing helps calm your mind.";
-  chat.innerHTML += "<p class='bot'>Bot: "+reply+"</p>";
-  msg.value="";
-}
-</script>
-<button onclick="window.location='home.html'">🏠 Home</button>
-
-</body>
-</html>
-
-
+  chat.innerHTML += "<p class='user'>You: "+msg.value
